@@ -1861,6 +1861,7 @@
 'ovpn mtu-disc off' => 'Disabled',
 'ovpn mtu-disc with mssfix or fragment' => 'Path MTU Discovery cannot be used with mssfix or fragment.',
 'ovpn mtu-disc yes' => 'Forced',
+'ovpn ncp' => 'Negotiate encryption',
 'ovpn no connections' => 'No active OpenVPN connections',
 'ovpn on blue' => 'OpenVPN on BLUE:',
 'ovpn on orange' => 'OpenVPN on ORANGE:',

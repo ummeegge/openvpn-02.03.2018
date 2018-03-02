@@ -96,6 +96,7 @@ $cgiparams{'PMTU_DISCOVERY'} = '';
 $cgiparams{'DCIPHER'} = '';
 $cgiparams{'DAUTH'} = '';
 $cgiparams{'TLSAUTH'} = '';
+$cgiparams{'NCP'} = 'off';
 $routes_push_file = "${General::swroot}/ovpn/routes_push";
 
 # Add CCD files if not already presant
@@ -289,7 +290,6 @@ sub writeserverconf {
     }	
     print CONF "status-version 1\n";
     print CONF "status /var/run/ovpnserver.log 30\n";
-    print CONF "ncp-disable\n";
     print CONF "cipher $sovpnsettings{DCIPHER}\n";
     if ($sovpnsettings{'DAUTH'} eq '') {
         print CONF "";
@@ -298,6 +298,11 @@ sub writeserverconf {
     }
     if ($sovpnsettings{'TLSAUTH'} eq 'on') {
 	print CONF "tls-auth ${General::swroot}/ovpn/certs/ta.key\n";
+    }
+    if ($sovpnsettings{'NCP'} eq 'off') {
+        print CONF "ncp-disable\n";
+    } else {
+        print CONF "ncp-ciphers AES-256-GCM:AES-256-CBC:AES-196-GCM:CAMELLIA-256-CBC:AES-196-CBC\n";
     }
     if ($sovpnsettings{DCOMPLZO} eq 'on') {
         print CONF "comp-lzo\n";
@@ -758,6 +763,7 @@ if ($cgiparams{'ACTION'} eq $Lang::tr{'save-adv-options'}) {
     $vpnsettings{'PMTU_DISCOVERY'} = $cgiparams{'PMTU_DISCOVERY'};
     $vpnsettings{'DAUTH'} = $cgiparams{'DAUTH'};
     $vpnsettings{'TLSAUTH'} = $cgiparams{'TLSAUTH'};
+    $vpnsettings{'NCP'} = $cgiparams{'NCP'};
     my @temp=();
     
     if ($cgiparams{'FRAGMENT'} eq '') {
@@ -2677,6 +2683,9 @@ ADV_ERROR:
     if ($cgiparams{'TLSAUTH'} eq '') {
 		$cgiparams{'TLSAUTH'} = 'off';
     }
+    if ($cgiparams{'NCP'} eq '') {
+		$cgiparams{'NCP'} = 'off';
+    }
     $checked{'CLIENT2CLIENT'}{'off'} = '';
     $checked{'CLIENT2CLIENT'}{'on'} = '';
     $checked{'CLIENT2CLIENT'}{$cgiparams{'CLIENT2CLIENT'}} = 'CHECKED';
@@ -2712,6 +2721,9 @@ ADV_ERROR:
     $checked{'TLSAUTH'}{'off'} = '';
     $checked{'TLSAUTH'}{'on'} = '';
     $checked{'TLSAUTH'}{$cgiparams{'TLSAUTH'}} = 'CHECKED';
+    $checked{'NCP'}{'off'} = '';
+    $checked{'NCP'}{'on'} = '';
+    $checked{'NCP'}{$cgiparams{'NCP'}} = 'CHECKED';
    
     &Header::showhttpheaders();
     &Header::openpage($Lang::tr{'status ovpn'}, 1, '');
@@ -2853,6 +2865,23 @@ print <<END;
     <tr>
 		<td class'base'><b>$Lang::tr{'ovpn crypt options'}</b></td>
 	</tr>
+
+<table width='100%'>
+    <tr>
+	<td width='20%'></td> <td width='15%'> </td><td width='15%'> </td><td width='15%'></td><td width='35%'></td>
+    </tr>
+
+	<tr>
+		<td class='base'>$Lang::tr{'ovpn ncp'}</td>
+		<td><input type='checkbox' name='NCP' $checked{'NCP'}{'on'} /></td>
+	</tr>
+
+    <tr>
+		<td class='base'>HMAC tls-auth</td>
+		<td><input type='checkbox' name='TLSAUTH' $checked{'TLSAUTH'}{'on'} /></td>
+    </tr>
+
+
 	<tr>
 		<td width='20%'></td> <td width='30%'> </td><td width='25%'> </td><td width='25%'></td>
     </tr>	
@@ -2865,20 +2894,11 @@ print <<END;
 				<option value='SHA1'			$selected{'DAUTH'}{'SHA1'}>SHA1 (160 $Lang::tr{'bit'}, $Lang::tr{'vpn weak'})</option>
 			</select>
 		</td>
-		<td>$Lang::tr{'openvpn default'}: <span class="base">SHA1 (160 $Lang::tr{'bit'})</span></td>
+		<td>$Lang::tr{'openvpn default'}: <span class="base">SHA512 (512 $Lang::tr{'bit'})</span></td>
     </tr>
 </table>
+<hr size='1'>
 
-<table width='100%'>
-    <tr>
-	<td width='20%'></td> <td width='15%'> </td><td width='15%'> </td><td width='15%'></td><td width='35%'></td>
-    </tr>
-
-    <tr>
-	<td class='base'>HMAC tls-auth</td>
-	<td><input type='checkbox' name='TLSAUTH' $checked{'TLSAUTH'}{'on'} /></td>
-    </tr>
-    </table><hr>
 END
 
 if ( -e "/var/run/openvpn.pid"){
@@ -4594,6 +4614,9 @@ if ($cgiparams{'TYPE'} eq 'net') {
 	$cgiparams{'DAUTH'} = 'SHA1';
     }
     $selected{'DAUTH'}{$cgiparams{'DAUTH'}} = 'SELECTED';
+    $checked{'NCP'}{'off'} = '';
+    $checked{'NCP'}{'on'} = '';
+    $checked{'NCP'}{$cgiparams{'NCP'}} = 'CHECKED';
 
     if (1) {
 	&Header::showhttpheaders();
